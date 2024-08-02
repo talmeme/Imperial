@@ -108,6 +108,12 @@ extension FederatedServiceRouter {
             .flatMap { buffer in
                 return request.client.post(url, headers: self.callbackHeaders) { $0.body = buffer }
             }.flatMapThrowing { response in
+                // As per https://github.com/vapor-community/Imperial/issues/108, in some flows with "openid"-related scopes.
+                // the identity provider sends an id token together with the access token or auth code; save the id token.
+                if let id_token = try response.content.get(String?.self, at: ["id_token"]) {
+                    try request.session.set("id_token", to: id_token)
+                    try request.session.set("id_token_service", to: self.service)
+                }
                 return try response.content.get(String.self, at: ["access_token"])
             }
     }
