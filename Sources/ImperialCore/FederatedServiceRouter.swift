@@ -113,9 +113,8 @@ extension FederatedServiceRouter {
         let response = try await request.client.post(url, headers: self.callbackHeaders) { $0.body = buffer }
         // As per https://github.com/vapor-community/Imperial/issues/108, in some flows with "openid"-related scopes,
         // if the identity provider sends an ID token together with the access token or auth code, save the ID token.
-        if let id_token = try response.content.get(String?.self, at: ["id_token"]) {
-            try request.session.set("id_token", to: id_token)
-            try request.session.set("id_token_service" to: self.service)
+        if let idToken = try response.content.get(String?.self, at: ["id_token"]) {
+            try request.session.set("id_token", to: idToken)
         }
         return try response.content.get(String.self, at: ["access_token"])
     }
