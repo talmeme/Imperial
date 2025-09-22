@@ -23,7 +23,8 @@
 ///      }
 ///  }
 ///  ```
-package protocol FederatedServiceTokens: Sendable {
+/// Marked as public so that custom routers can be built
+public protocol FederatedServiceTokens: Sendable {
     /// The name of the environment variable that has the client ID.
     static var idEnvKey: String { get }
 

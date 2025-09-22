@@ -3,7 +3,8 @@ import Vapor
 
 /// Defines a type that implements the routing to get an access token from an OAuth provider.
 /// See implementations in the `Services/(Google|GitHub)/$0Router.swift` files
-package protocol FederatedServiceRouter: Sendable {
+/// Marked as public so that custom routers can be built
+public protocol FederatedServiceRouter: Sendable {
     /// An object that gets the client ID and secret from environment variables.
     var tokens: any FederatedServiceTokens { get }
 
@@ -78,11 +79,11 @@ package protocol FederatedServiceRouter: Sendable {
 }
 
 extension FederatedServiceRouter {
-    package var codeKey: String { "code" }
-    package var errorKey: String { "error" }
+    public var codeKey: String { "code" }
+    public var errorKey: String { "error" }
     package var callbackHeaders: HTTPHeaders { [:] }
 
-    package func configureRoutes(
+    public func configureRoutes(
         withAuthURL authURL: String, authenticateCallback: (@Sendable (Request) async throws -> Void)?, on router: some RoutesBuilder
     ) throws {
         router.get(callbackURL.pathSegments, use: callback)
@@ -96,7 +97,7 @@ extension FederatedServiceRouter {
         }
     }
 
-    package func fetchToken(from request: Request) async throws -> String {
+    public func fetchToken(from request: Request) async throws -> String {
         let code: String
         if let queryCode: String = try request.query.get(at: codeKey) {
             code = queryCode
@@ -114,7 +115,7 @@ extension FederatedServiceRouter {
         return try response.content.get(String.self, at: ["access_token"])
     }
 
-    package func callback(_ request: Request) async throws -> Response {
+    public func callback(_ request: Request) async throws -> Response {
         let accessToken = try await self.fetchToken(from: request)
         let session = request.session
         try session.setAccessToken(accessToken)
@@ -124,20 +125,21 @@ extension FederatedServiceRouter {
 }
 
 /// Convenience URLQueryItems
+/// Marked as public so that custom routers can be built
 extension FederatedServiceRouter {
-    package var clientIDItem: URLQueryItem {
+    public var clientIDItem: URLQueryItem {
         .init(name: "client_id", value: tokens.clientID)
     }
 
-    package var redirectURIItem: URLQueryItem {
+    public var redirectURIItem: URLQueryItem {
         .init(name: "redirect_uri", value: callbackURL)
     }
 
-    package var scopeItem: URLQueryItem {
+    public var scopeItem: URLQueryItem {
         .init(name: "scope", value: scope.joined(separator: " "))
     }
 
-    package var codeResponseTypeItem: URLQueryItem {
+    public var codeResponseTypeItem: URLQueryItem {
         .init(name: "response_type", value: "code")
     }
 }
